@@ -1,0 +1,33 @@
+{
+  "name": "varttaa-overseas-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Technovuz/varttaa-overseas-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Technovuz/varttaa-overseas-api/issues"
+  },
+  "homepage": "https://github.com/Technovuz/varttaa-overseas-api#readme",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
+    "muter": "^0.7.0",
+    "prisma": "^6.8.2",
+    "winston": "^3.17.0"
+  }
+}

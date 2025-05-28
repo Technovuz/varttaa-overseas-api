@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  isDeleted Boolean  @default(false)
+}
+
+model Machine {
+  id          Int       @id @default(autoincrement())
+  name        String
+  type        MachineType
+  price       Float
+  description String    @db.Text()
+  images      MachineImage[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Common Specifications (Shared across all machines)
+  commonSpecs CommonSpecs?
+
+  // Type-Specific Specifications
+  iceCreamSpecs          IceCreamSpecs?
+  sugarcaneJuiceSpecs    SugarcaneJuiceSpecs?
+  beverageVendingSpecs   BeverageVendingSpecs?
+  coffeeMachineSpecs     CoffeeMachineSpecs?
+  waffleMakerSpecs       WaffleMakerSpecs?
+  pizzaOvenSpecs         PizzaOvenSpecs?
+  popcornMachineSpecs    PopcornMachineSpecs?
+  sweetCornMachineSpecs  SweetCornMachineSpecs?
+  deepFryerSpecs         DeepFryerSpecs?
+}
+
+model MachineImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  machine   Machine  @relation(fields: [machineId], references: [id])
+  machineId Int
+}
+
+// Enum for machine types (matches frontend categories)
+enum MachineType {
+  ICE_CREAM_MACHINE
+  SUGARCANE_JUICE_MACHINE
+  COFFEE_TEA_MACHINE
+  PIZZA_OVEN
+  POPCORN_MACHINE
+  HOT_BEVERAGE_VENDING_MACHINE
+  SWEET_CORN_MACHINE
+  WAFFLE_MAKER
+  STAINLESS_STEEL_DEEP_FRYER
+}
+
+// COMMON SPECIFICATIONS (Shared by all machines)
+model CommonSpecs {
+  id              Int      @id @default(autoincrement())
+  machine         Machine  @relation(fields: [machineId], references: [id])
+  machineId       Int      @unique
+  
+  // Fields from your dynamicFields that appear in most categories
+  brand           String?
+  material        String?
+  bodyMaterial    String?  // Common in many types
+  powerSource     String?
+  voltage         String?
+  power           String?
+  powerConsumptionKW String?
+  automationGrade String?
+  usage           String?  // usage/application
+  warranty        String?
+  dimensions      String?  // product dimensions
+  weight          String?  // item weight
+  countryOfOrigin String?
+  color           String?  // colour/color
+  operationMode   String?
+}
+
+// TYPE-SPECIFIC MODELS (Each matches frontend dynamicFields)
+
+model IceCreamSpecs {
+  id          Int     @id @default(autoincrement())
+  machine     Machine @relation(fields: [machineId], references: [id])
+  machineId   Int     @unique
+  capacity    String?
+  type        String? // Specific type of ice cream machine
+}
+
+model SugarcaneJuiceSpecs {
+  id          Int     @id @default(autoincrement())
+  machine     Machine @relation(fields: [machineId], references: [id])
+  machineId   Int     @unique
+  capacity    String?
+  motorType   String?
+}
+
+model BeverageVendingSpecs {
+  id                  Int     @id @default(autoincrement())
+  machine             Machine @relation(fields: [machineId], references: [id])
+  machineId           Int     @unique
+  premixCanister      String? // premix canister/capacity
+  drinkOptions        String?
+  hotWaterTankMaterial String?
+  dedicatedHotWater   String?
+  autoFlush           String?
+  dispensingRate      String?
+  startUpTime         String?
+  modelNameNumber     String? // model name/number
+  netWeight           String?
+  grossWeight         String?
+  packageDimensions   String?
+}
+
+model CoffeeMachineSpecs {
+  id                Int     @id @default(autoincrement())
+  machine           Machine @relation(fields: [machineId], references: [id])
+  machineId         Int     @unique
+  capacityCups      String? // capacity (no. of cups)
+  type              String?
+  startUpTime       String?
+  hotTankMaterial   String? // hot tank material
+}
+
+model WaffleMakerSpecs {
+  id          Int     @id @default(autoincrement())
+  machine     Machine @relation(fields: [machineId], references: [id])
+  machineId   Int     @unique
+  type        String?
+  size        String?
+}
+
+model PizzaOvenSpecs {
+  id              Int     @id @default(autoincrement())
+  machine         Machine @relation(fields: [machineId], references: [id])
+  machineId       Int     @unique
+  ovenType        String? // type of pizza oven
+  size            String?
+  forBaking       String? // for baking
+}
+
+model PopcornMachineSpecs {
+  id          Int     @id @default(autoincrement())
+  machine     Machine @relation(fields: [machineId], references: [id])
+  machineId   Int     @unique
+  snacksType  String?
+  capacity    String? // capacity (500 grams/batch)
+}
+
+model SweetCornMachineSpecs {
+  id          Int     @id @default(autoincrement())
+  machine     Machine @relation(fields: [machineId], references: [id])
+  machineId   Int     @unique
+  capacity    String? // capacity (kg/hr)
+}
+
+model DeepFryerSpecs {
+  id                Int     @id @default(autoincrement())
+  machine           Machine @relation(fields: [machineId], references: [id])
+  machineId         Int     @unique
+  capacity          String?
+  surfaceTreatment  String?
+  operation         String?
+}
