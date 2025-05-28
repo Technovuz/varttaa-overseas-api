@@ -28,6 +28,7 @@ model Machine {
   price       Float
   description String    @db.Text()
   images      MachineImage[]
+  enquiries Enquiry[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -174,4 +175,26 @@ model DeepFryerSpecs {
   capacity          String?
   surfaceTreatment  String?
   operation         String?
+}
+
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String
+  subject   String    @db.Text()
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Enquiry {
+  id              Int      @id @default(autoincrement())
+  productId       Int
+  product         Machine  @relation(fields: [productId], references: [id])
+  quantity        Int?
+  unit            String?   // e.g., "pieces", "kg", "liters"
+  additionalInfo  String?  @db.Text()
+  phone           String
+  createdAt       DateTime @default(now())
 }

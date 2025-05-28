@@ -158,16 +158,35 @@ const includeOptions = {
   }
 };
 
-// GET all machines (with optional type filter)
+// GET all machines
 const getMachines = async (req, res) => {
   try {
-    const { type } = req.query;
+    const { search, type, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = req.query;
+
+    const where = { deletedAt: null };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (type) where.type = type;
+
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = parseFloat(minPrice);
+      if (maxPrice) where.price.lte = parseFloat(maxPrice);
+    }
 
     const machines = await prisma.machine.findMany({
-      where: { type: type || undefined },
+      where,
       include: {
         commonSpecs: true,
         ...getTypeSpecificInclude(type)
+      },
+      orderBy: {
+        [sortBy]: sortOrder
       }
     });
 
@@ -177,6 +196,7 @@ const getMachines = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // GET machine by ID
 const getMachineById = async (req, res) => {
