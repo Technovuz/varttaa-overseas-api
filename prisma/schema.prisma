@@ -31,6 +31,8 @@ model Machine {
   enquiries Enquiry[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  isDeleted Boolean  @default(false)
+
 
   // Common Specifications (Shared across all machines)
   commonSpecs CommonSpecs?

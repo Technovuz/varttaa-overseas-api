@@ -163,7 +163,9 @@ const getMachines = async (req, res) => {
   try {
     const { search, type, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = req.query;
 
-    const where = { deletedAt: null };
+    const where = { isDeleted: false,
+                  deletedAt: null,
+                    };
 
     if (search) {
       where.OR = [
@@ -183,6 +185,7 @@ const getMachines = async (req, res) => {
       where,
       include: {
         commonSpecs: true,
+        images: true,
         ...getTypeSpecificInclude(type)
       },
       orderBy: {
@@ -203,9 +206,11 @@ const getMachineById = async (req, res) => {
   try {
     const { id } = req.params;
     const machine = await prisma.machine.findUnique({
-      where: { id: parseInt(id) },
+      where: { isDeleted: false,
+         id: parseInt(id) },
       include: {
         commonSpecs: true,
+        images: true,
         ...getTypeSpecificInclude()
       }
     });
@@ -283,35 +288,41 @@ const deleteMachine = async (req, res) => {
     const { id } = req.params;
     const machineId = parseInt(id);
 
-    const existingMachine = await prisma.machine.findUnique({ where: { id: machineId } });
-    if (!existingMachine) return res.status(404).json({ error: 'Machine not found' });
-
-    await prisma.$transaction(async (prisma) => {
-      // Delete all type-specific specs safely
-      await Promise.all([
-        prisma.iceCreamSpecs.deleteMany({ where: { machineId } }),
-        prisma.sugarcaneJuiceSpecs.deleteMany({ where: { machineId } }),
-        prisma.beverageVendingSpecs.deleteMany({ where: { machineId } }),
-        prisma.coffeeMachineSpecs.deleteMany({ where: { machineId } }),
-        prisma.pizzaOvenSpecs.deleteMany({ where: { machineId } }),
-        prisma.popcornMachineSpecs.deleteMany({ where: { machineId } }),
-        prisma.sweetCornMachineSpecs.deleteMany({ where: { machineId } }),
-        prisma.waffleMakerSpecs.deleteMany({ where: { machineId } }),
-        prisma.deepFryerSpecs.deleteMany({ where: { machineId } }),
-        prisma.commonSpecs.deleteMany({ where: { machineId } }),
-        prisma.machine.delete({ where: { id: machineId } })
-      ]);
+    const existingMachine = await prisma.machine.findFirst({
+      where: { id: machineId, isDeleted: false },
+      include: { images: true }
     });
 
-    // Delete images from disk
-deleteFiles(existingMachine.images.map(img => path.join('files', path.basename(img.url))));
+    if (!existingMachine) return res.status(404).json({ error: 'Machine not found or already deleted' });
 
-    res.status(204).end();
+    // Soft delete
+    await prisma.machine.update({
+      where: { id: machineId },
+      data: { isDeleted: true }
+    });
+
+    // Optionally remove related specs and files
+    await Promise.all([
+      prisma.iceCreamSpecs.deleteMany({ where: { machineId } }),
+      prisma.sugarcaneJuiceSpecs.deleteMany({ where: { machineId } }),
+      prisma.beverageVendingSpecs.deleteMany({ where: { machineId } }),
+      prisma.coffeeMachineSpecs.deleteMany({ where: { machineId } }),
+      prisma.pizzaOvenSpecs.deleteMany({ where: { machineId } }),
+      prisma.popcornMachineSpecs.deleteMany({ where: { machineId } }),
+      prisma.sweetCornMachineSpecs.deleteMany({ where: { machineId } }),
+      prisma.waffleMakerSpecs.deleteMany({ where: { machineId } }),
+      prisma.deepFryerSpecs.deleteMany({ where: { machineId } }),
+      prisma.commonSpecs.deleteMany({ where: { machineId } }),
+    ]);
+
+    res.status(200).json({ message: 'Machine soft-deleted successfully' });
   } catch (error) {
     console.error('Error deleting machine:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // Helper: include type-specific spec for queries
 function getTypeSpecificInclude(type) {
