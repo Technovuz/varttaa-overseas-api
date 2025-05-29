@@ -24,6 +24,7 @@ const createMachine = async (req, res) => {
     const commonSpecs = JSON.parse(req.body.commonSpecs || '{}');
     const typeSpecificSpecs = JSON.parse(req.body.typeSpecificSpecs || '{}');
 
+    // Validation
     if (!name || !type) {
       return res.status(400).json({ error: 'Name and type are required' });
     }
@@ -34,40 +35,18 @@ const createMachine = async (req, res) => {
       return res.status(400).json({ error: 'Max 5 images allowed' });
     }
 
-    // Get array of image paths
+    // Prepare image URLs
     const imageUrls = req.files.map((file) => {
-  // If you store files in "files" directory and serve them statically:
-  const baseUrl = `${req.protocol}://${req.get('host')}/files`;
-  return {
-    url: `${baseUrl}/${file.filename}`  // Make sure multer saves with filename
-  };
-});
+      const baseUrl = `${req.protocol}://${req.get('host')}/files`;
+      return { url: `${baseUrl}/${file.filename}` };
+    });
 
-const includeOptions = {
+    // Define include options for later query
+    const includeOptions = {
       commonSpecs: true,
       images: true,
     };
-
-//     const machine = await prisma.$transaction(async (prisma) => {
-//       const createdMachine = await prisma.machine.create({
-//         data: {
-//           name,
-//           type,
-//           price: parseFloat(price),
-//           description,
-//           commonSpecs: { create: commonSpecs },
-//           images: {
-//       create: imageUrls
-      
-//     }
-//         },
-
-//         include: {
-//   commonSpecs: true,
-//   images: true,
-// };
-
- switch (type) {
+    switch (type) {
       case 'ICE_CREAM_MACHINE':
         includeOptions.iceCreamSpecs = true;
         break;
@@ -99,8 +78,9 @@ const includeOptions = {
         throw new Error('Invalid machine type');
     }
 
-    // Create machine in a transaction
-    const machine = await prisma.$transaction(async (prisma) => {
+    // Transaction: create machine and type-specific specs
+    const fullMachine = await prisma.$transaction(async (prisma) => {
+      // Step 1: Create machine with common specs and images
       const createdMachine = await prisma.machine.create({
         data: {
           name,
@@ -109,13 +89,10 @@ const includeOptions = {
           description,
           commonSpecs: { create: commonSpecs },
           images: { create: imageUrls },
-        },
-        include: includeOptions, // Only includes relevant specs
+        }
       });
 
-    
-
-      // Create type-specific specs based on machine type
+      // Step 2: Create type-specific specs
       switch (type) {
         case 'ICE_CREAM_MACHINE':
           await prisma.iceCreamSpecs.create({ data: { machineId: createdMachine.id, ...typeSpecificSpecs } });
@@ -148,22 +125,29 @@ const includeOptions = {
           throw new Error('Invalid machine type');
       }
 
-      return createdMachine;
+      // Step 3: Query the complete machine with all includes
+      const machineWithDetails = await prisma.machine.findUnique({
+        where: { id: createdMachine.id },
+        include: includeOptions,
+      });
+
+      return machineWithDetails;
     });
 
-    res.status(201).json(machine);
+    res.status(201).json(fullMachine);
   } catch (error) {
     console.error('Error creating machine:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
+
 // GET all machines
 const getMachines = async (req, res) => {
   try {
     const { search, type, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = req.query;
 
-    const where = { isDeleted: false,
+    const where = { isDeleted: false, deletedAt: null
                     };
 
     if (search) {
