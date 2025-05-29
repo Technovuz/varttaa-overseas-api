@@ -164,7 +164,6 @@ const getMachines = async (req, res) => {
     const { search, type, minPrice, maxPrice, sortBy = 'name', sortOrder = 'asc' } = req.query;
 
     const where = { isDeleted: false,
-                  deletedAt: null,
                     };
 
     if (search) {
