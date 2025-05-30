@@ -18,10 +18,13 @@ app.use("/files", express.static(uploadPath));
 // Import Routes
 const adminRoutes = require("./routes/admin.routes");
 const machineRoutes = require("./routes/machine.routes");
+const formRoutes = require("./routes/form.routes");
+
 
 // Use Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/machine",machineRoutes);
+app.use("/aoi/form",formRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.url}`);
