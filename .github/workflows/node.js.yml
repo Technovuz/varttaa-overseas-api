@@ -1,0 +1,53 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      # Step 1: Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js with caching
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      # Step 3: Copy environment file
+      - name: Configure environment
+        run: |
+          touch .env
+          echo "${{ secrets.PROD_ENV_FILE }}" | tr -d '\r' > .env
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 5: Set HOME environment variable for PM2
+      - name: Set PM2 home directory
+        run: |
+          echo "PM2_HOME=/root/.pm2" >> $GITHUB_ENV
+          echo "HOME=$(pwd)" >> $GITHUB_ENV
+
+      # Step 6: Start the application with PM2
+      - name: Start application in production
+        run: |
+          pm2 delete varttaa-overseas || true
+          pm2 start src/server.js --name varttaa-overseas
+          pm2 save
+
+      # Step 8: Verify application health
+      - name: Verify application health
+        run: pm2 status varttaa-overseas
