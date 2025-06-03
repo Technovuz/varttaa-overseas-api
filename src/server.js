@@ -11,6 +11,11 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true,
+}));
+
 
 const uploadPath = process.env.UPLOADS_PATH || "files";
 app.use("/files", express.static(uploadPath));
@@ -24,7 +29,7 @@ const formRoutes = require("./routes/form.routes");
 // Use Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/machine",machineRoutes);
-app.use("/aoi/form",formRoutes);
+app.use("/api/form",formRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.url}`);
