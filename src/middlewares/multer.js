@@ -28,6 +28,11 @@ const fileFilter = (req, file, cb) => {
     "image/jpg": "jpg",
     "image/png": "png",
     "image/gif": "gif",
+    "image/webp": "webp",
+    "image/svg+xml": "svg",
+    "image/bmp": "bmp",
+    "image/tiff": "tiff",
+    "image/x-icon": "ico", // for .ico files
     "video/mp4": "mp4",
     "video/x-msvideo": "avi",
     "video/x-matroska": "mkv",
