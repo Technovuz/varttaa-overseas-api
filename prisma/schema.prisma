@@ -67,6 +67,17 @@ enum MachineType {
   SWEET_CORN_MACHINE
   WAFFLE_MAKER
   STAINLESS_STEEL_DEEP_FRYER
+  FOOD_WARMER
+  JUICER_MACHINE
+  JUICE_DISPENSER
+  BAKERY_MACHINE
+  BAKERY_EQUIPMENT
+  COMMERCIAL_FOOD_PROCESSING_MACHINE
+  FAST_FOOD_KITCHEN_EQUIPMENT
+  HOTEL_SUPPLY
+  ACCESSORY
+  MACHINE_SPARE
+  MISCELLANEOUS
 }
 
 // COMMON SPECIFICATIONS (Shared by all machines)
@@ -91,6 +102,17 @@ model CommonSpecs {
   countryOfOrigin String?
   color           String?  // colour/color
   operationMode   String?
+  temperatureRange     String? // e.g., "30°C - 110°C" for food warmers
+  capacityLiters       String? // for juice dispensers, tea/coffee machines
+  capacityKg           String? // for bakery, processing, or warmers
+  numberOfShelves      String? // for warmers, ovens, storage units
+  traySize             String? // bakery trays, commercial food processing
+  compatibleAccessories String? // for accessories and spares
+  mountingType         String? // tabletop, wall-mounted, floor-standing
+  insulationType       String? // for warmers, ovens
+  controlType          String? // digital, manual, thermostat
+  safetyFeatures       String? // auto shut-off, child lock
+  maintenanceRequired  String? // yes/no or interval details
 }
 
 // TYPE-SPECIFIC MODELS (Each matches frontend dynamicFields)
