@@ -75,7 +75,7 @@ const createMachine = async (req, res) => {
         includeOptions.deepFryerSpecs = true;
         break;
       default:
-        throw new Error('Invalid machine type');
+        break;
     }
 
     // Transaction: create machine and type-specific specs
@@ -346,7 +346,7 @@ async function updateTypeSpecificSpecs(machineId, type, data) {
     case 'SWEET_CORN_MACHINE': return prisma.sweetCornMachineSpecs.update({ where: { machineId }, data });
     case 'WAFFLE_MAKER': return prisma.waffleMakerSpecs.update({ where: { machineId }, data });
     case 'STAINLESS_STEEL_DEEP_FRYER': return prisma.deepFryerSpecs.update({ where: { machineId }, data });
-    default: throw new Error('Invalid machine type for update');
+    default: return Promise.resolve();;
   }
 }
 
