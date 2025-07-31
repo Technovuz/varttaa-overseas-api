@@ -122,7 +122,7 @@ const createMachine = async (req, res) => {
           await prisma.deepFryerSpecs.create({ data: { machineId: createdMachine.id, ...typeSpecificSpecs } });
           break;
         default:
-          throw new Error('Invalid machine type');
+          break;
       }
 
       // Step 3: Query the complete machine with all includes
